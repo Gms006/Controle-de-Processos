@@ -24,7 +24,7 @@ jobs:
       
       - name: 📦 Instalar Dependências
         run: |
-          pip install requests sqlalchemy python-dateutil
+          pip install requests sqlalchemy python-dateutil pandas
       
       - name: 🔄 Executar Sincronização
         env:
