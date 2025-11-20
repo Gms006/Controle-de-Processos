@@ -1,0 +1,7 @@
+# Este arquivo mantém a pasta data/ no Git
+# O banco processos.db será criado automaticamente pela sincronização
+
+# Para inicializar o banco:
+# 1. Execute o dashboard: streamlit run app.py
+# 2. Acesse a página "⚙️ Sincronização"
+# 3. Clique em "🚀 Iniciar Sincronização"

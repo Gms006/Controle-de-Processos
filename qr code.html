@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code WhatsApp - Acessorias</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 30px;
+    }
+
+    .qr-wrapper {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      margin: 20px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      position: relative;
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #qr {
+      width: 300px;
+      height: 300px;
+      display: none;
+      border-radius: 10px;
+    }
+
+    #qr.show {
+      display: block;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .instructions {
+      color: #667eea;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+    }
+
+    .status.success {
+      background: rgba(76, 175, 80, 0.3);
+    }
+
+    .status.warning {
+      background: rgba(255, 152, 0, 0.3);
+    }
+
+    .status.info {
+      background: rgba(33, 150, 243, 0.3);
+    }
+
+    .instance-info {
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .code-block {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      text-align: left;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .input-group {
+      margin: 20px 0;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 5px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .help-text {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .step {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      text-align: left;
+    }
+
+    .step-number {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.3);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 30px;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 QR Code WhatsApp</h1>
+    <p class="subtitle">Conecte sua instância Evolution API</p>
+    
+    <div class="qr-wrapper">
+      <div id="instructions" class="instructions">
+        <p>📋 <strong>Como usar:</strong></p>
+        <div class="step">
+          <span class="step-number">1</span>
+          Execute no PowerShell o comando para criar/conectar a instância
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          Copie toda a resposta JSON que o PowerShell retornar
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          Cole no campo abaixo e clique em "Mostrar QR Code"
+        </div>
+      </div>
+      <img id="qr" alt="QR Code do WhatsApp">
+    </div>
+
+    <div class="input-group">
+      <textarea id="jsonInput" placeholder='Cole aqui a resposta JSON completa do PowerShell, exemplo:
+{
+  "instance": {...},
+  "qrcode": {
+    "base64": "data:image/png;base64,..."
+  }
+}'></textarea>
+      <button onclick="processarJSON()">📱 Mostrar QR Code</button>
+    </div>
+
+    <div id="status" class="status info">
+      💡 Aguardando você colar o JSON da API...
+    </div>
+
+    <div class="code-block">
+<strong>💻 Comando PowerShell:</strong>
+
+$body = @{
+  instanceName="acessorias"
+  qrcode=$true
+  integration="WHATSAPP-BAILEYS"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+  -Uri "http://localhost:8081/instance/create" `
+  -Method POST `
+  -Headers @{
+    "Content-Type"="application/json"
+    "apikey"="acessorias_evolution_key_2025"
+  } `
+  -Body $body | ConvertTo-Json -Depth 10
+    </div>
+
+    <div class="instance-info">
+      Instância: <strong>acessorias</strong>
+    </div>
+
+    <button onclick="copiarComando()">📋 Copiar Comando</button>
+    <button onclick="limpar()">🔄 Limpar</button>
+  </div>
+
+  <script>
+    // Tentar carregar automaticamente do arquivo JSON local
+    async function carregarQRCodeAutomatico() {
+      try {
+        const response = await fetch('qr%20code.json');
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.base64) {
+            mostrarQRCode(data.base64);
+            atualizarStatus('✅ QR Code carregado automaticamente! Escaneie com o WhatsApp.', 'success');
+            return true;
+          }
+        }
+      } catch (error) {
+        console.log('Arquivo JSON não encontrado, aguardando entrada manual...');
+      }
+      return false;
+    }
+
+    function processarJSON() {
+      const jsonInput = document.getElementById('jsonInput').value.trim();
+      
+      if (!jsonInput) {
+        atualizarStatus('⚠️ Cole o JSON da resposta da API primeiro!', 'warning');
+        return;
+      }
+
+      try {
+        const data = JSON.parse(jsonInput);
+        
+        if (data.qrcode && data.qrcode.base64) {
+          mostrarQRCode(data.qrcode.base64);
+          atualizarStatus('✅ QR Code carregado com sucesso! Escaneie com o WhatsApp.', 'success');
+        } else if (data.base64) {
+          // Caso o JSON seja só o objeto qrcode
+          mostrarQRCode(data.base64);
+          atualizarStatus('✅ QR Code carregado com sucesso! Escaneie com o WhatsApp.', 'success');
+        } else {
+          atualizarStatus('⚠️ JSON não contém o QR Code. Verifique se a propriedade "qrcode.base64" existe.', 'warning');
+        }
+      } catch (error) {
+        console.error('Erro ao processar JSON:', error);
+        atualizarStatus(`❌ Erro ao processar JSON: ${error.message}`, 'warning');
+      }
+    }
+
+    function mostrarQRCode(base64) {
+      const qrImg = document.getElementById('qr');
+      const instructions = document.getElementById('instructions');
+      
+      qrImg.src = base64;
+      qrImg.classList.add('show');
+      instructions.style.display = 'none';
+    }
+
+    function atualizarStatus(mensagem, tipo) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = mensagem;
+      statusDiv.className = `status ${tipo}`;
+    }
+
+    function copiarComando() {
+      const comando = `$body = @{
+  instanceName="acessorias"
+  qrcode=$true
+  integration="WHATSAPP-BAILEYS"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "http://localhost:8081/instance/create" -Method POST -Headers @{"Content-Type"="application/json"; "apikey"="acessorias_evolution_key_2025"} -Body $body | ConvertTo-Json -Depth 10`;
+      
+      navigator.clipboard.writeText(comando).then(() => {
+        atualizarStatus('✅ Comando copiado! Cole no PowerShell.', 'success');
+      }).catch(() => {
+        atualizarStatus('⚠️ Não foi possível copiar automaticamente.', 'warning');
+      });
+    }
+
+    function limpar() {
+      document.getElementById('jsonInput').value = '';
+      document.getElementById('qr').classList.remove('show');
+      document.getElementById('instructions').style.display = 'block';
+      atualizarStatus('💡 Aguardando você colar o JSON da API...', 'info');
+    }
+
+    // Permite colar e processar com Ctrl+V
+    document.getElementById('jsonInput').addEventListener('paste', function() {
+      setTimeout(() => {
+        atualizarStatus('✅ JSON colado! Clique em "Mostrar QR Code".', 'success');
+      }, 100);
+    });
+
+    // Carregar automaticamente ao abrir a página
+    window.addEventListener('DOMContentLoaded', async function() {
+      // Verificar se está sendo servido via HTTP
+      if (window.location.protocol !== 'file:') {
+        const carregado = await carregarQRCodeAutomatico();
+        if (carregado) return;
+      }
+      
+      // Se for arquivo local, mostrar instrução
+      atualizarStatus('💡 Cole o JSON do arquivo "qr code.json" no campo abaixo (Ctrl+A, Ctrl+C no arquivo JSON)', 'info');
+    });
+  </script>
+</body>
+</html>

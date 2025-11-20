@@ -1,0 +1,64 @@
+name: 🔄 Sincronização Automática de Dados
+
+on:
+  schedule:
+    # Executa a cada 30 minutos
+    - cron: '*/30 * * * *'
+  
+  # Permite execução manual
+  workflow_dispatch:
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout do Repositório
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Instalar Dependências
+        run: |
+          pip install requests sqlalchemy python-dateutil
+      
+      - name: 🔄 Executar Sincronização
+        env:
+          ACESSORIAS_API_TOKEN: ${{ secrets.ACESSORIAS_API_TOKEN }}
+          ACESSORIAS_API_URL: ${{ secrets.ACESSORIAS_API_URL }}
+        run: |
+          python .github/workflows/sync_script.py
+      
+      - name: 📊 Verificar Mudanças
+        id: check_changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 💾 Commit e Push
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add streamlit_app/data/processos.db
+          git commit -m "🔄 Atualização automática de dados - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+      
+      - name: ✅ Notificar Sucesso
+        if: success()
+        run: |
+          echo "✅ Sincronização concluída com sucesso!"
+          echo "📊 Banco de dados atualizado"
+      
+      - name: ❌ Notificar Falha
+        if: failure()
+        run: |
+          echo "❌ Erro na sincronização"
+          echo "⚠️ Verifique os logs para mais detalhes"

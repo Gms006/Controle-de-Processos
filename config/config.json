@@ -1,0 +1,28 @@
+{
+  "api": {
+    "base_url": "https://api.acessorias.com",
+    "timeout": 30,
+    "max_retries": 3,
+    "rate_limit": {
+      "max_requests_per_minute": 90,
+      "safety_margin": 10
+    }
+  },
+  "processos": {
+    "simples_nacional": {
+      "nome_processo": "Simples Nacional - Mensal",
+      "status_monitorar": ["A", "C"],
+      "departamentos": ["Fiscal", "Contábil"]
+    }
+  },
+  "output": {
+    "planilhas_formato": "xlsx",
+    "encoding": "utf-8",
+    "separador_csv": ";"
+  },
+  "logs": {
+    "nivel": "INFO",
+    "arquivo": "logs/app.log",
+    "max_size_mb": 10
+  }
+}

@@ -1,0 +1,46 @@
+# Environment
+.env
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Data
+data/raw/*.json
+data/processed/*.json
+*.csv
+
+# Output
+output/planilhas/*.xlsx
+output/relatorios/*.pdf
+output/relatorios/*.html
+
+# Logs
+logs/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+temp/
+tmp/
+*.tmp
+
+# ============ STREAMLIT ============
+# Secrets (NUNCA commitar!)
+.streamlit/secrets.toml
+
+# Database local (será gerado pelo sync)
+streamlit_app/data/processos.db
+streamlit_app/data/*.db
+streamlit_app/data/*.sqlite
+
+# Cache do Streamlit
+.streamlit/cache/
