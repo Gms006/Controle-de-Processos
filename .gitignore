@@ -1,24 +1,24 @@
-# Environment
-.env
+# ============================================
+# PROJETO STREAMLIT - Controle de Processos
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 env/
-*.pyc
-__pycache__/
+ENV/
+*.egg-info/
 
-# Data
-data/raw/*.json
-data/processed/*.json
-*.csv
+# Streamlit - Secrets (NUNCA commitar!)
+.streamlit/secrets.toml
+streamlit_app/data/*.db
+streamlit_app/data/*.sqlite
 
-# Output
-output/planilhas/*.xlsx
-output/relatorios/*.pdf
-output/relatorios/*.html
-
-# Logs
-logs/*.log
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -27,20 +27,39 @@ logs/*.log
 # OS
 .DS_Store
 Thumbs.db
+*.log
 
-# Temporary
-temp/
-tmp/
-*.tmp
+# ============================================
+# EXCLUIR ARQUIVOS DO PROJETO ANTIGO
+# ============================================
+backend/
+config/
+data/
+docs/
+evolution-api/
+frontend/
+logs/
+output/
+scripts/
+templates/
 
-# ============ STREAMLIT ============
-# Secrets (NUNCA commitar!)
-.streamlit/secrets.toml
+# Arquivos PowerShell
+*.ps1
+conectar_*.ps1
+gerar_*.ps1
+webhook_*.ps1
+debug_*.json
+qr*.html
+qr*.json
 
-# Database local (será gerado pelo sync)
-streamlit_app/data/processos.db
-streamlit_app/data/*.db
-streamlit_app/data/*.sqlite
+# Arquivos raiz antigos
+main.py
+app.py
+requirements.txt
+sync_*.log
 
-# Cache do Streamlit
-.streamlit/cache/
+# Markdown antigos (manter só do Streamlit)
+*.md
+!streamlit_app/*.md
+!INSTRUCOES_DEPLOY.md
+!README.md

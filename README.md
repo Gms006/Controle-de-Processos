@@ -1,134 +1,107 @@
-# 📊 Análise de Processos - API Acessórias
+# 📊 Dashboard de Controle de Processos Contábeis
 
-Projeto para análise automatizada de processos do sistema Acessórias, com foco inicial em **Simples Nacional - Mensal**.
+Dashboard interativo desenvolvido com **Streamlit** para acompanhamento e gestão de processos contábeis integrado com a API Acessórias.
 
-## 🎯 Objetivo
+## 🚀 Funcionalidades
 
-Buscar, analisar e gerar relatórios sobre processos em andamento e concluídos, identificando:
-- Status atual de cada processo
-- Onde o processo está parado
-- Tempo decorrido e previsão de conclusão
-- Análises por empresa
-- Gargalos e oportunidades de melhoria
+- **Dashboard Principal**: Visão geral com 8 KPIs principais
+- **Análise de Processos**: Filtros avançados, exportação CSV, análise de gargalos
+- **Gestão de Empresas**: Rankings, performance por regime tributário
+- **Sincronização Automática**: GitHub Actions executando a cada 30 minutos
+
+## 📦 Tecnologias
+
+- **Frontend**: Streamlit 1.28+
+- **Database**: SQLite com SQLAlchemy
+- **Visualização**: Plotly, Altair
+- **Automação**: GitHub Actions
+- **Deploy**: Streamlit Cloud
+
+## 🛠️ Instalação Local
+
+```bash
+# 1. Clone o repositório
+git clone https://github.com/Gms006/Controle-de-Processos.git
+cd Controle-de-Processos
+
+# 2. Instale as dependências
+cd streamlit_app
+pip install -r requirements.txt
+
+# 3. Configure os secrets
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml
+# Edite secrets.toml com suas credenciais
+
+# 4. Execute o dashboard
+streamlit run app.py
+```
+
+## ☁️ Deploy no Streamlit Cloud
+
+1. Acesse [share.streamlit.io](https://share.streamlit.io)
+2. Conecte com seu GitHub
+3. Selecione este repositório
+4. Configure:
+   - **Main file path**: `streamlit_app/app.py`
+   - **Secrets**: Adicione `ACESSORIAS_API_TOKEN` e `ACESSORIAS_API_URL`
+5. Clique em "Deploy"
+
+## 🔄 Sincronização Automática
+
+O GitHub Actions sincroniza os dados automaticamente a cada 30 minutos.
+
+Para ativar:
+1. Vá em Settings → Secrets → Actions
+2. Adicione:
+   - `ACESSORIAS_API_TOKEN`
+   - `ACESSORIAS_API_URL`
+3. Ative os workflows em Actions
 
 ## 📁 Estrutura do Projeto
 
 ```
-c:\acessorias processos\
-├── config/                      # Configurações
-│   └── config.json             # Configurações gerais
-├── data/                        # Dados
-│   ├── raw/                    # Dados brutos da API
-│   └── processed/              # Dados processados
-├── scripts/                     # Scripts Python
-│   ├── api_client.py           # Cliente da API
-│   ├── buscar_processos_simples_nacional.py  # Script principal
-│   ├── processador_processos.py  # Processamento de dados
-│   ├── exportador_excel.py     # Exportação para Excel
-│   └── utils.py                # Utilitários
-├── docs/                        # Documentação
-│   └── estrutura_processo_simples_nacional.md  # Detalhes do processo
-├── logs/                        # Logs de execução
-├── output/                      # Arquivos de saída
-│   ├── planilhas/              # Planilhas Excel geradas
-│   └── relatorios/             # Relatórios HTML/PDF
-├── .env.example                # Exemplo de variáveis de ambiente
-├── .gitignore                  # Arquivos ignorados pelo Git
-├── requirements.txt            # Dependências Python
-└── README.md                   # Este arquivo
+streamlit_app/
+├── app.py                    # Dashboard principal
+├── pages/                    # Páginas adicionais
+│   ├── 1_📋_Processos.py    # Análise de processos
+│   ├── 2_🏢_Empresas.py     # Gestão de empresas
+│   └── 3_⚙️_Sincronização.py # Sync management
+├── components/               # Componentes reutilizáveis
+│   ├── charts.py            # Gráficos Plotly
+│   ├── filters.py           # Filtros interativos
+│   └── metrics.py           # KPI cards
+├── utils/                    # Utilitários
+│   ├── database.py          # Gerenciamento SQLite
+│   ├── formatters.py        # Formatação de dados
+│   └── sync_manager.py      # Sincronização com API
+└── requirements.txt         # Dependências Python
 ```
 
-## 🚀 Como Usar
+## 🔐 Segurança
 
-### 1. Instalação
+- ✅ Secrets gerenciados via `.streamlit/secrets.toml` (não versionado)
+- ✅ `.gitignore` configurado para proteger dados sensíveis
+- ✅ Database local não versionado
 
-```powershell
-# Criar ambiente virtual
-python -m venv venv
+## 📈 KPIs Monitorados
 
-# Ativar ambiente virtual
-.\venv\Scripts\Activate.ps1
+1. Total de Processos
+2. Processos Ativos
+3. Processos Concluídos
+4. Taxa de Conclusão
+5. Tempo Médio de Conclusão
+6. Processos em Atraso
+7. Empresas Ativas
+8. Média de Passos por Processo
 
-# Instalar dependências
-pip install -r requirements.txt
-```
+## 🤝 Contribuição
 
-### 2. Configuração
-
-```powershell
-# Copiar arquivo de exemplo
-copy .env.example .env
-
-# Editar .env e adicionar seu token da API
-notepad .env
-```
-
-### 3. Execução
-
-```powershell
-# Buscar processos de Simples Nacional
-python scripts\buscar_processos_simples_nacional.py
-```
-
-## 📋 Funcionalidades Planejadas
-
-### Fase 1 - Simples Nacional (Atual)
-- [x] Estrutura do projeto
-- [ ] Buscar processos concluídos
-- [ ] Buscar processos em andamento
-- [ ] Análise por empresa
-- [ ] Identificação de passo atual
-- [ ] Exportação para Excel
-
-### Fase 2 - Análises Avançadas
-- [ ] Dashboard interativo
-- [ ] Alertas de processos atrasados
-- [ ] Previsão de conclusão com ML
-- [ ] Relatórios automatizados
-
-### Fase 3 - Outros Processos
-- [ ] Integração com outros tipos de processo
-- [ ] Análise comparativa
-- [ ] Benchmarking
-
-## 📊 Saídas Geradas
-
-### Planilhas Excel
-1. **Processos Concluídos** - Lista de todos processos finalizados
-2. **Processos em Andamento** - Processos ativos com status atual
-3. **Análise por Empresa** - Consolidação por empresa
-4. **Relatório Geral** - Visão consolidada com múltiplas abas
-
-### Estrutura das Planilhas
-- Dados de empresa (Nome, CNPJ)
-- Informações do processo (ID, Nome, Status)
-- Datas (Início, Conclusão, Previsão)
-- Análises (Dias corridos, Passo atual, Porcentagem)
-
-## 🔧 Configurações
-
-Edite `config/config.json` para:
-- Ajustar rate limit
-- Definir processos a monitorar
-- Configurar formato de saída
-- Personalizar logs
-
-## 📝 Próximos Passos
-
-1. Documentar estrutura completa do processo "Simples Nacional - Mensal"
-2. Implementar lógica de análise de passos
-3. Desenvolver exportação para Excel
-4. Criar análises e métricas
-5. Testar com dados reais
-
-## 🤝 Contribuindo
-
-Este é um projeto interno. Para sugestões ou melhorias, entre em contato.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
 
 ## 📄 Licença
 
-Uso interno - Acessórias
+Este projeto é de uso interno da Acessórias Contábil.
 
 ---
 
-**Última atualização:** 17 de Novembro de 2025
+**Desenvolvido com ❤️ usando Streamlit**
