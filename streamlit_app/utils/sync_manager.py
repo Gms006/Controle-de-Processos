@@ -40,11 +40,11 @@ class SyncManager:
         """
         if regimes is None:
             regimes = [
-                'SimplesNacional',
-                'LucroPresumido_Servicos',
-                'LucroPresumido_Comercio',
-                'LucroReal_Comercio',
-                'LucroReal_Servicos'
+                'Simples Nacional — Mensal',
+                'Lucro Presumido - Serviços',
+                'Lucro Presumido - Comércio, Industria e Serviços',
+                'Lucro Real - Comércio e Industria',
+                'Lucro Real - Serviços'
             ]
         
         inicio = datetime.now()

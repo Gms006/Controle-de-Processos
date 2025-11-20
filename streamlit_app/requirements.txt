@@ -16,15 +16,13 @@ plotly>=5.17.0
 altair>=5.1.0
 
 # Date/Time
-python-dateutil>=2.8.0
+python-dateutil>=2.8.2
 
 # HTTP Client
 requests>=2.31.0
-httpx>=0.25.0
 
 # Utilities
 python-dotenv>=1.0.0
-python-dateutil>=2.8.2
 
 # Performance
 openpyxl>=3.1.0
