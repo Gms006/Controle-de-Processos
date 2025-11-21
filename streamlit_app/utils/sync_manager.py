@@ -7,6 +7,7 @@ import sqlite3
 import hashlib
 import json
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Optional
 from pathlib import Path
 import streamlit as st
@@ -76,10 +77,23 @@ class SyncManager:
                     )
                     
                     processos = processos_andamento + processos_concluidos
-                    total_processos += len(processos)
+                    print(f"  Encontrados: {len(processos)} processos")
+                    
+                    # Buscar detalhes completos de cada processo (ProcPassos)
+                    print(f"  Buscando detalhes completos...")
+                    processos_detalhados = []
+                    for proc in processos:
+                        proc_id = proc.get('ProcID')
+                        if proc_id:
+                            detalhes = self._fetch_processo_detalhado(proc_id)
+                            if detalhes:
+                                processos_detalhados.append(detalhes)
+                    
+                    print(f"  Total com detalhes: {len(processos_detalhados)}")
+                    total_processos += len(processos_detalhados)
                     
                     # Salvar processos no banco
-                    for proc in processos:
+                    for proc in processos_detalhados:
                         novos, atualizados = self._salvar_processo(conn, proc)
                         processos_novos += novos
                         processos_atualizados += atualizados
@@ -107,10 +121,11 @@ class SyncManager:
     
     def _fetch_processos(self, proc_nome: str, proc_status: str, 
                         competencia: str = None) -> List[Dict]:
-        """Busca processos da API"""
+        """Busca processos da API (lista resumida)"""
         params = {
             "ProcNome": proc_nome,
-            "ProcStatus": proc_status
+            "ProcStatus": proc_status,
+            "Pagina": 1
         }
         
         if competencia:
@@ -136,6 +151,28 @@ class SyncManager:
         except Exception as e:
             print(f"❌ Erro ao buscar processos: {e}")
             return []
+    
+    def _fetch_processo_detalhado(self, proc_id: str) -> Optional[Dict]:
+        """Busca detalhes completos de um processo específico (com ProcPassos)"""
+        try:
+            response = requests.get(
+                f"{self.api_url}/processes/{proc_id}",
+                headers=self.headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    return data[0]
+                elif isinstance(data, dict):
+                    return data
+            
+            return None
+        
+        except Exception as e:
+            print(f"❌ Erro ao buscar detalhes do processo {proc_id}: {e}")
+            return None
     
     def _salvar_processo(self, conn, proc_data: Dict) -> tuple:
         """
@@ -167,17 +204,27 @@ class SyncManager:
         )
         resultado = cursor.fetchone()
         
+        # Calcular competência: mês anterior à data de início
+        competencia = self._calcular_competencia(proc_data.get('ProcInicio'))
+        
+        # Contar passos
+        passos = proc_data.get('ProcPassos', [])
+        total_passos, passos_concluidos = self._contar_passos(passos)
+        
+        # Extrair porcentagem de conclusão
+        porcentagem = self._extrair_porcentagem(proc_data.get('ProcPorcentagem', '0'))
+        
         # Extrair dados do processo
         dados_processo = {
             'proc_id': proc_id,
             'empresa_id': empresa_id,
             'nome': proc_data.get('ProcNome', ''),
-            'competencia': proc_data.get('ProcCompetencia', ''),
+            'competencia': competencia,
             'status': proc_data.get('ProcStatus', ''),
-            'porcentagem_conclusao': proc_data.get('ProcPorcentagem', 0),
-            'total_passos': proc_data.get('ProcTotalPassos', 0),
-            'passos_concluidos': proc_data.get('ProcPassosConcluidos', 0),
-            'dias_corridos': proc_data.get('ProcDiasCorridos', 0),
+            'porcentagem_conclusao': porcentagem,
+            'total_passos': total_passos,
+            'passos_concluidos': passos_concluidos,
+            'dias_corridos': self._extrair_int(proc_data.get('ProcDiasCorridos', 0)),
             'data_inicio': proc_data.get('ProcInicio'),
             'data_conclusao': proc_data.get('ProcConclusao'),
             'regime_tributario': self._extrair_regime(proc_data.get('ProcNome', '')),
@@ -248,7 +295,7 @@ class SyncManager:
         return conn.execute("SELECT last_insert_rowid()").fetchone()[0]
     
     def _salvar_passos(self, conn, processo_id: int, passos_data: List):
-        """Salva passos do processo"""
+        """Salva passos do processo (recursivo para sub-processos)"""
         if not passos_data:
             return
         
@@ -257,22 +304,49 @@ class SyncManager:
             if isinstance(passos_data[0], list):
                 passos_data = passos_data[0]
         
+        ordem = 1
         for idx, passo in enumerate(passos_data):
             if isinstance(passo, dict):
+                tipo = passo.get('Tipo', '')
+                nome = passo.get('Nome', '')
+                status = passo.get('Status', '')
+                automacao = passo.get('Automacao', {})
+                
+                # Extrair responsável e bloqueante
+                responsavel = ''
+                bloqueante = ''
+                if isinstance(automacao, dict):
+                    bloqueante = automacao.get('Bloqueante', '')
+                    entrega = automacao.get('Entrega', {})
+                    if isinstance(entrega, dict):
+                        responsavel = entrega.get('Responsavel', '')
+                
+                # Salvar passo
                 conn.execute(
                     """INSERT INTO passos 
                        (passo_id, processo_id, ordem, nome, descricao, concluido, responsavel)
                        VALUES (?, ?, ?, ?, ?, ?, ?)""",
                     [
-                        passo.get('PassoID', idx),
+                        idx,
                         processo_id,
-                        idx + 1,
-                        passo.get('PassoNome', ''),
-                        passo.get('PassoDescricao', ''),
-                        1 if passo.get('PassoConcluido') else 0,
-                        passo.get('PassoResponsavel', '')
+                        ordem,
+                        nome,
+                        f"{tipo}: {bloqueante}" if bloqueante else tipo,
+                        1 if status == 'OK' else 0,
+                        responsavel
                     ]
                 )
+                ordem += 1
+                
+                # Se é desdobramento, salvar na tabela de desdobramentos
+                if tipo == 'Desdobramento':
+                    self._salvar_desdobramento(conn, processo_id, passo, ordem)
+                
+                # Se é sub-processo, processar passos filhos recursivamente
+                if tipo == 'Sub processo':
+                    passos_filhos = passo.get('ProcPassos', [])
+                    if passos_filhos:
+                        self._salvar_passos(conn, processo_id, passos_filhos)
     
     def _extrair_regime(self, proc_nome: str) -> str:
         """Extrai regime tributário do nome do processo"""
@@ -289,6 +363,111 @@ class SyncManager:
             else:
                 return 'Lucro Real - Comércio'
         return 'Outros'
+    
+    def _calcular_competencia(self, data_inicio_str: str) -> str:
+        """
+        Calcula competência: mês ANTERIOR à data de início do processo
+        Exemplo: Processo iniciado em 05/11/2025 → Competência: 2025-10
+        """
+        if not data_inicio_str or data_inicio_str == '0000-00-00':
+            return ''
+        
+        try:
+            # Converter de dd/mm/yyyy para datetime
+            data_inicio = datetime.strptime(data_inicio_str, "%d/%m/%Y")
+            
+            # Calcular mês anterior
+            competencia_dt = data_inicio - relativedelta(months=1)
+            
+            # Retornar no formato YYYY-MM
+            return competencia_dt.strftime("%Y-%m")
+        except Exception as e:
+            print(f"⚠️  Erro ao calcular competência para {data_inicio_str}: {e}")
+            return ''
+    
+    def _contar_passos(self, passos: List) -> tuple:
+        """
+        Conta total de passos e passos concluídos (recursivo)
+        Returns: (total_passos, passos_concluidos)
+        """
+        if not passos:
+            return (0, 0)
+        
+        # ProcPassos pode vir como [[passos]] ou [passos]
+        if isinstance(passos, list) and len(passos) > 0:
+            if isinstance(passos[0], list):
+                passos = passos[0]
+        
+        total = 0
+        concluidos = 0
+        
+        for passo in passos:
+            if isinstance(passo, dict):
+                total += 1
+                
+                # Verificar se concluído
+                status = passo.get('Status', '')
+                if status == 'OK':
+                    concluidos += 1
+                
+                # Se é sub-processo, contar passos filhos recursivamente
+                if passo.get('Tipo') == 'Sub processo':
+                    passos_filhos = passo.get('ProcPassos', [])
+                    filhos_total, filhos_concluidos = self._contar_passos(passos_filhos)
+                    total += filhos_total
+                    concluidos += filhos_concluidos
+        
+        return (total, concluidos)
+    
+    def _extrair_porcentagem(self, porcentagem_str: str) -> float:
+        """
+        Extrai porcentagem de string
+        Exemplo: "45%" → 45.0, "0.00" → 0.0
+        """
+        if not porcentagem_str:
+            return 0.0
+        
+        try:
+            # Remover % se existir
+            porcentagem_str = str(porcentagem_str).replace('%', '').strip()
+            return float(porcentagem_str)
+        except Exception:
+            return 0.0
+    
+    def _extrair_int(self, valor) -> int:
+        """Converte valor para inteiro com segurança"""
+        try:
+            return int(valor)
+        except (ValueError, TypeError):
+            return 0
+    
+    def _salvar_desdobramento(self, conn, processo_id: int, desdobramento: Dict, ordem: int):
+        """Salva desdobramento na tabela de desdobramentos"""
+        nome = desdobramento.get('Nome', '')
+        status = desdobramento.get('Status', '')
+        automacao = desdobramento.get('Automacao', [])
+        
+        # Extrair alternativas
+        alternativas = []
+        if isinstance(automacao, list):
+            alternativas = [alt.get('Nome', '') for alt in automacao]
+        
+        alternativas_str = '; '.join(alternativas)
+        
+        conn.execute(
+            """INSERT INTO desdobramentos 
+               (desdobramento_id, processo_id, pergunta, alternativas, tipo, ordem, respondido)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            [
+                ordem,
+                processo_id,
+                nome,
+                alternativas_str,
+                'Decisão',
+                ordem,
+                1 if status == 'OK' else 0
+            ]
+        )
     
     def _registrar_inicio_sync(self, competencia: str) -> int:
         """Registra início da sincronização"""
