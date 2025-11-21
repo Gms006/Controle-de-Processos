@@ -11,6 +11,7 @@ streamlit_path = Path(__file__).parent.parent.parent / "streamlit_app"
 sys.path.insert(0, str(streamlit_path))
 
 from utils.sync_manager import SyncManager
+from utils.database import DatabaseManager
 
 def main():
     """Executa a sincronização"""
@@ -36,6 +37,12 @@ def main():
     db_path.parent.mkdir(parents=True, exist_ok=True)
     
     print(f"📂 Banco de dados: {db_path}")
+    print()
+    
+    # Inicializar banco de dados (criar tabelas se necessário)
+    print("🔧 Inicializando banco de dados...")
+    db_manager = DatabaseManager(db_path=str(db_path))
+    print("✓ Banco inicializado")
     print()
     
     # Criar SyncManager
