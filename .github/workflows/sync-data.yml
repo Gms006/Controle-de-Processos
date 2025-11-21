@@ -23,7 +23,7 @@ jobs:
       
       - name: 📦 Instalar Dependências
         run: |
-          pip install --no-cache-dir requests sqlalchemy python-dateutil pandas numpy
+          pip install --no-cache-dir requests sqlalchemy python-dateutil pandas numpy streamlit
       
       - name: 🔄 Executar Sincronização
         env:
